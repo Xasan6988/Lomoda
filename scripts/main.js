@@ -58,12 +58,12 @@ const getData = async () => {
   }
 };
 
-
-const getGoods = (callback, value) => {
+// получение товаров из БД
+const getGoods = (callback, prop, value,) => {
   getData()
     .then(data => {
       if (value) {
-        callback(data.filter(item => item.category === value));
+        callback(data.filter(item => item[prop] === value));
       } else {
         callback(data);
       }
@@ -71,7 +71,7 @@ const getGoods = (callback, value) => {
     .catch(err => console.error(err));
 };
 
-// страница товаров
+// страница категорий
 
 try {
   const goodsList = document.querySelector('.goods__list');
@@ -82,17 +82,12 @@ try {
   }
 
 // Переключаю значение тайтла
-  // navLink.forEach(item => {
-  //   item.addEventListener('click', e => {
-  //     let target = e.target;
-  //     goodsTitle.textContent = target.textContent;
-  //   })
-  // })
 
   const changeTitle = () => {
     goodsTitle.textContent = document.querySelector(`[href*="#${hash}"]`).textContent;
-  }
+  };
 
+  // вывод товаров на страницу
   const createCard = ({id, preview, cost, brand, name, sizes}) => {
     const li = document.createElement('li');
 
@@ -130,17 +125,91 @@ try {
 // ререндеринг при переходе по ссылке (смене хэша)
   window.addEventListener('hashchange', () => {
     hash = location.hash.substring(1);
-    getGoods(renderGoodsList, hash);
-    changeTitle();
+    getGoods(renderGoodsList, 'category', hash);
+    changeTitle(); // обновление тайтла страницы при смене категории
   });
 
   changeTitle();
-  getGoods(renderGoodsList, hash);
+  // получение товаров по категории + вывод на страницу
+  getGoods(renderGoodsList, 'category', hash);
 
 } catch (err) {
   console.warn(err);
 }
+// страница товара
 
+try {
+
+  if (!document.querySelector('.card-good')) {
+    throw 'This is not a card-good page';
+  }
+
+  // получение элементов для дальнейшего вывода контента
+  const cardGoodImage = document.querySelector('.card-good__image');
+  const cardGoodBrand = document.querySelector('.card-good__brand');
+  const cardGoodTitle = document.querySelector('.card-good__title');
+  const cardGoodPrice = document.querySelector('.card-good__price');
+  const cardGoodColor = document.querySelector('.card-good__color');
+  const cardGoodColorList = document.querySelector('.card-good__color-list');
+  const cardGoodSelectWrapper = document.querySelectorAll('.card-good__select__wrapper');
+  const cardGoodSizes = document.querySelector('.card-good__sizes');
+  const cardGoodSizesList = document.querySelector('.card-good__sizes-list');
+  const cardGoodbuy = document.querySelector('.card-good__buy');
+
+  // генерация дропдауна с параметрами
+  const generateList = data => data.reduce((html, item, i) => html +
+  `<li class="card-good__select-item" data-id="${i}">${item}</li>`, '');
+
+
+  // вывод новых данных при открытии карточки товара
+  const renderCardGood = ([{brand, name, cost, sizes, color, photo}]) => {
+    cardGoodImage.src = `goods-image/${photo}`;
+    cardGoodImage.alt = `${brand} ${name}`;
+    cardGoodBrand.textContent = brand;
+    cardGoodTitle.textContent = name;
+    cardGoodPrice.textContent = `${cost} ₽` ;
+
+    // генерация дропдауна
+    if (color) {
+      cardGoodColor.textContent = color[0];
+      cardGoodColor.dataset.id = 0;
+      cardGoodColorList.innerHTML = generateList(color);
+    } else {
+      cardGoodColor.style.display = 'none';
+    }
+
+    // генерация дропдауна
+    if (sizes) {
+      cardGoodSizes.textContent = sizes[0];
+      cardGoodSizes.dataset.id = 0;
+      cardGoodSizesList.innerHTML = generateList(sizes);
+    } else {
+      cardGoodSizes.style.display = 'none';
+    }
+  };
+
+  // открытие/закрытие дропдауна, смена контента при выборе нового пункта
+  cardGoodSelectWrapper.forEach(item => {
+    item.addEventListener('click', e => {
+      let target = e.target;
+
+      if (target.closest('.card-good__select')) {
+        target.classList.toggle('card-good__select__open');
+      }
+      if (target.closest('.card-good__select-item')) {
+        const cardGoodSelect = item.querySelector('.card-good__select');
+        cardGoodSelect.textContent = target.textContent;
+        cardGoodSelect.dataset.id = target.dataset.id;
+        cardGoodSelect.classList.remove('card-good__select__open');
+      }
+    });
+  });
+  // получение конкретного товара + его вывод
+  getGoods(renderCardGood, 'id', hash);
+
+} catch (err) {
+  console.warn(err);
+}
 
 // эвенты
 
@@ -159,6 +228,8 @@ document.addEventListener('keydown', e => {
   }
 });
 
+
+// указание города + сохранение в локалку
 headerCityButton.addEventListener('click', () => {
   const city = prompt('Укажите ваш город');
   if (city !== null) {

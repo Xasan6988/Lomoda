@@ -71,6 +71,8 @@ const getGoods = (callback, value) => {
     .catch(err => console.error(err));
 };
 
+// страница товаров
+
 try {
   const goodsList = document.querySelector('.goods__list');
   const goodsTitle = document.querySelector('.goods__title');
@@ -80,12 +82,16 @@ try {
   }
 
 // Переключаю значение тайтла
-  navLink.forEach(item => {
-    item.addEventListener('click', e => {
-      let target = e.target;
-      goodsTitle.textContent = target.textContent;
-    })
-  })
+  // navLink.forEach(item => {
+  //   item.addEventListener('click', e => {
+  //     let target = e.target;
+  //     goodsTitle.textContent = target.textContent;
+  //   })
+  // })
+
+  const changeTitle = () => {
+    goodsTitle.textContent = document.querySelector(`[href*="#${hash}"]`).textContent;
+  }
 
   const createCard = ({id, preview, cost, brand, name, sizes}) => {
     const li = document.createElement('li');
@@ -124,10 +130,11 @@ try {
 // ререндеринг при переходе по ссылке (смене хэша)
   window.addEventListener('hashchange', () => {
     hash = location.hash.substring(1);
-
     getGoods(renderGoodsList, hash);
+    changeTitle();
   });
 
+  changeTitle();
   getGoods(renderGoodsList, hash);
 
 } catch (err) {

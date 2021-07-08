@@ -75,13 +75,13 @@ const getGoods = (callback, prop, value,) => {
 
 try {
   const goodsList = document.querySelector('.goods__list');
-  const goodsTitle = document.querySelector('.goods__title');
 
-  if (!goodsList || !goodsTitle) {
+  if (!goodsList) {
     throw 'This is not a goods page';
   }
 
-// Переключаю значение тайтла
+  // Переключаю значение тайтла
+  const goodsTitle = document.querySelector('.goods__title');
 
   const changeTitle = () => {
     goodsTitle.textContent = document.querySelector(`[href*="#${hash}"]`).textContent;

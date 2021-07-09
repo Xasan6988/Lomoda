@@ -2,12 +2,53 @@ const headerCityButton = document.querySelector('.header__city-button');
 const subheaderCart = document.querySelector('.subheader__cart');
 const cartOverlay = document.querySelector('.cart-overlay');
 const navLink = document.querySelectorAll('.navigation__link');
+const cartListGoods = document.querySelector('.cart__list-goods');
+const cartTotalCost = document.querySelector('.cart__total-cost');
 
 let hash = location.hash.substring(1);
 
 // вывод города из локалки
 
 headerCityButton.textContent = localStorage.getItem('lomoda-location') || 'Ваш город?';
+
+// работа с данными корзины в локалке
+
+const getLocalStorage = () => JSON?.parse(localStorage.getItem('cart-lomoda')) || [];
+const setLocalStorage = data => localStorage.setItem('cart-lomoda', JSON.stringify(data));
+
+
+// работа с корзиной
+
+const renderCart = () => {
+  cartListGoods.textContent = '';
+
+  const cartItems = getLocalStorage('cart-lomoda');
+  let totalPrice = 0;
+
+  cartItems.forEach((item, i) => {
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+                <td>${i + 1}</td>
+                <td>${item.brand} ${item.name}</td>
+                ${item.color ? `<td>${item.color}</td>` : `<td>-</td>`}
+                ${item.size ? `<td>${item.size}</td>` : `<td>-</td>`}
+                <td>${item.cost} &#8381;</td>
+                <td><button class="btn-delete" data-id="${item.id}">&times;</button></td>
+                `;
+    totalPrice += item.cost;
+    cartListGoods.append(tr);
+  });
+  cartTotalCost.textContent = totalPrice + ' ₽';
+};
+
+// удаление из корзины
+
+const deleteItemCart = id => {
+  const cartItems = getLocalStorage();
+  const newCartItems = cartItems.filter(item => item.id !== id);
+  setLocalStorage(newCartItems);
+}
 
 // блокировка скрола
 
@@ -40,6 +81,7 @@ const enableScroll = () => {
 const cartModalOpen = () => {
   cartOverlay.classList.add('cart-overlay-open');
   disableScroll();
+  renderCart();
 };
 
 const cartModalClose = () => {
@@ -162,7 +204,10 @@ try {
 
 
   // вывод новых данных при открытии карточки товара
-  const renderCardGood = ([{brand, name, cost, sizes, color, photo}]) => {
+  const renderCardGood = ([{id, brand, name, cost, sizes, color, photo}]) => {
+    const data = {brand, name, cost, id};
+
+
     cardGoodImage.src = `goods-image/${photo}`;
     cardGoodImage.alt = `${brand} ${name}`;
     cardGoodBrand.textContent = brand;
@@ -186,6 +231,35 @@ try {
     } else {
       cardGoodSizes.style.display = 'none';
     }
+
+    // проверка, есть ли товар уже в корзине для изменения кнопки
+    if (getLocalStorage().some(item => item.id === id)) {
+      cardGoodbuy.classList.add('delete');
+      cardGoodbuy.textContent = 'Удалить из корзины';
+    }
+
+    // клик по кнопке "добавить в корзину"
+    cardGoodbuy.addEventListener('click', () => {
+      // проверка для клика по "удлаить с корзины"
+      // действия при удалении
+      if (cardGoodbuy.classList.contains('delete')) {
+        deleteItemCart(id);
+        cardGoodbuy.classList.remove('delete');
+        cardGoodbuy.textContent = 'Добавить в корзину';
+        return;
+      }
+      // деймствия при добавлении
+      if (color) data.color = cardGoodColor.textContent;
+      if (sizes) data.size = cardGoodSizes.textContent;
+
+      cardGoodbuy.classList.add('delete');
+      cardGoodbuy.textContent = 'Удалить из корзины';
+
+      // апдейт корзины
+      const cardData = getLocalStorage();
+      cardData.push(data);
+      setLocalStorage(cardData);
+  })
   };
 
   // открытие/закрытие дропдауна, смена контента при выборе нового пункта
@@ -204,6 +278,8 @@ try {
       }
     });
   });
+
+
   // получение конкретного товара + его вывод
   getGoods(renderCardGood, 'id', hash);
 
@@ -212,6 +288,15 @@ try {
 }
 
 // эвенты
+
+cartListGoods.addEventListener('click', e => {
+  let target = e.target;
+
+  if (target.matches('.btn-delete')) {
+    deleteItemCart(target.dataset.id);
+    renderCart();
+  }
+})
 
 subheaderCart.addEventListener('click', cartModalOpen)
 

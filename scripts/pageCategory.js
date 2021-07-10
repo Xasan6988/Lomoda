@@ -75,4 +75,4 @@ export default (hash) => {
 } catch (err) {
   console.warn(err);
 }
-}
+};

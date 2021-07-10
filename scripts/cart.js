@@ -1,4 +1,5 @@
 import { getLocalStorage, setLocalStorage } from "./localStorage.js";
+import { updateCountGoodsCart } from "./index.js";
 
 const cartListGoods = document.querySelector('.cart__list-goods');
 const cartTotalCost = document.querySelector('.cart__total-cost');
@@ -34,6 +35,7 @@ export const deleteItemCart = id => {
   const cartItems = getLocalStorage();
   const newCartItems = cartItems.filter(item => item.id !== id);
   setLocalStorage(newCartItems);
+  updateCountGoodsCart();
 }
 
 

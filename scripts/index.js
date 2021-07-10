@@ -1,4 +1,5 @@
 import { cartModalOpen, cartModalClose } from "./modal.js";
+import { getLocalStorage } from "./localStorage.js";
 import pageCategory from './pageCategory.js';
 import pageCartGood from './pageCartGood.js';
 
@@ -9,6 +10,27 @@ pageCartGood(hash);
 const cartOverlay = document.querySelector('.cart-overlay');
 const headerCityButton = document.querySelector('.header__city-button');
 const subheaderCart = document.querySelector('.subheader__cart');
+
+
+// скрипт склонения слов
+const declOfNum = (n, titles) => {
+  return titles[n % 10 === 1 && n % 100 !== 11 ?
+    0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2];
+};
+
+
+// обновление счётчика товаров НА корзине
+export const updateCountGoodsCart = () => {
+  let count = getLocalStorage().length;
+  let arr = ['товар', 'товара', 'товаров'];
+  if (count) {
+    subheaderCart.textContent = count +  ' ' + declOfNum(count, arr);
+  } else {
+    subheaderCart.textContent = 'Корзина';
+  }
+}
+
+updateCountGoodsCart();
 
 
 // вывод города из локалки

@@ -1,5 +1,6 @@
 import { getLocalStorage, setLocalStorage } from "./localStorage.js";
 import { deleteItemCart } from "./cart.js";
+import { updateCountGoodsCart } from "./index.js";
 import  getGoods from "./service.js";
 
 // страница товара
@@ -85,6 +86,7 @@ try {
       const cardData = getLocalStorage();
       cardData.push(data);
       setLocalStorage(cardData);
+      updateCountGoodsCart();
   })
   };
 
